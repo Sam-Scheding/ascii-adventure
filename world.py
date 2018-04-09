@@ -2,7 +2,7 @@ import random
 from math import floor
 from collections import defaultdict
 
-WORLD_RADIUS = 15
+WORLD_RADIUS = 50
 STICKINESS = 0.5 # 0 <= x <= 1
 VILLAGE_POS = (floor(WORLD_RADIUS / 2), floor(WORLD_RADIUS / 2))
 FOOD_PER_MOVE = 2
@@ -179,6 +179,47 @@ class World():
 
 	def getFeatureAtLocation(self, x, y):
 		return self.world_rep[x][y]	
+
+	def getView(self, radius, pos):
+
+		x_lo = pos[0] - radius
+		x_hi = pos[0] + radius
+		y_lo = pos[1] - radius
+		y_hi = pos[1] + radius
+		left_space = right_space = bottom_space = 0
+		rep = ''
+
+		# Fill in the view for y < 0 with *
+		if y_lo < 0:
+			left_space = abs(0 - y_lo)				
+			y_lo = 0
+
+		# Fill in the view for y > radius * 2 with *
+		elif y_hi > self.RADIUS * 2:
+			right_space = y_hi - (self.RADIUS * 2)
+			y_hi = self.RADIUS * 2
+
+		# Fill in the view for x > radius * 2 with *
+		if x_hi > self.RADIUS * 2 - 1:
+			bottom_space = x_hi - (self.RADIUS * 2 - 1)
+			x_hi = self.RADIUS * 2 - 1
+
+		# Fill in the map for x < 0 with *
+		while x_lo < 0:
+			rep += ('* ' * (radius * 2)) + '\n' 
+			x_lo += 1
+
+		for x in range(x_lo, x_hi+1):
+			rep += ('* ' * left_space)
+			rep += ' '.join(map(str, self.world_rep[x][y_lo:y_hi]))
+			rep += (' *' * right_space)
+			rep += '\n'
+
+		while bottom_space > 0:
+			rep += ('* ' * (radius * 2 + 1)) + '\n' 
+			bottom_space -= 1
+
+		return rep
 
 
 	def __str__(self):

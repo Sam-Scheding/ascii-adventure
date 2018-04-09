@@ -1,7 +1,9 @@
 import curses, time
 from curses import wrapper
+from math import floor
 from world import World
 from player import Player
+from keyboard import KeyBoard
 
 def main(stdscr):
 
@@ -9,33 +11,32 @@ def main(stdscr):
 
     world = World()
     player = Player()
-    valid_input = True
-    stdscr.addstr(str(world))
+    view_radius = 16
 
     while True:
 
-        # Update the player's position
-        stdscr.addstr(player.x, player.y, player.ICON)
-        c = stdscr.getch()
-        # Replace the tile that the player icon is currently covering
-        feature = world.getFeatureAtLocation(player.x, player.y)
-        stdscr.addstr(player.x, player.y, feature)
-        
-        if c == ord('w'):
+        view = world.getView(view_radius, (player.x, player.y))
+        stdscr.addstr(0,0,view)
+
+        # Show player icon in the middle of the view
+        stdscr.addstr(view_radius, view_radius * 2, player.ICON)
+
+        action = stdscr.getch()
+
+        if KeyBoard.up(action):
             player.moveNorth()
 
-        elif c == ord('a'):
+        elif KeyBoard.left(action):
             player.moveWest()
 
-        elif c == ord('s'):
+        elif KeyBoard.down(action):
             player.moveSouth()
 
-        elif c == ord('d'):
+        elif KeyBoard.right(action):
             player.moveEast()
 
-        elif c == ord('q'):
+        elif KeyBoard.exit(action):
             break
-
 
     close()
 
