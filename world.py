@@ -5,13 +5,6 @@ from collections import defaultdict
 WORLD_RADIUS = 50
 STICKINESS = 0.5 # 0 <= x <= 1
 VILLAGE_POS = (floor(WORLD_RADIUS / 2), floor(WORLD_RADIUS / 2))
-FOOD_PER_MOVE = 2
-WATER_PER_MOVE = 1
-NORTH = (0, -1)
-SOUTH = (0, 1)
-WEST = (-1, 0)
-EAST = (1, 0)
-
 
 FEATURES = {
 	'ROAD': '#',
@@ -180,6 +173,10 @@ class World():
 	def getFeatureAtLocation(self, x, y):
 		return self.world_rep[x][y]	
 
+	def atWorldEdge(self, obj):
+	
+		return obj.y >= self.RADIUS * 2 - 1 or obj.x >= self.RADIUS * 2 - 1 or obj.y <= 0 or obj.x <= 0
+	
 	def getView(self, radius, pos):
 
 		x_lo = pos[0] - radius
@@ -195,7 +192,7 @@ class World():
 			y_lo = 0
 
 		# Fill in the view for y > radius * 2 with *
-		elif y_hi > self.RADIUS * 2:
+		elif y_hi > self.RADIUS * 2 - 1:
 			right_space = y_hi - (self.RADIUS * 2)
 			y_hi = self.RADIUS * 2
 
@@ -206,17 +203,17 @@ class World():
 
 		# Fill in the map for x < 0 with *
 		while x_lo < 0:
-			rep += ('* ' * (radius * 2)) + '\n' 
+			rep += ('  ' * (radius * 2)) + '\n' 
 			x_lo += 1
 
 		for x in range(x_lo, x_hi+1):
-			rep += ('* ' * left_space)
+			rep += ('  ' * left_space)
 			rep += ' '.join(map(str, self.world_rep[x][y_lo:y_hi]))
-			rep += (' *' * right_space)
+			rep += ('  ' * right_space)
 			rep += '\n'
 
 		while bottom_space > 0:
-			rep += ('* ' * (radius * 2 + 1)) + '\n' 
+			rep += ('  ' * (radius * 2)) + '\n'
 			bottom_space -= 1
 
 		return rep

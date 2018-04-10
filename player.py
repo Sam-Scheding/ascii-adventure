@@ -19,11 +19,11 @@ class Player(object):
 			self.x -= 1
 
 	def moveSouth(self):
-		if self.x < WORLD_RADIUS * 2:
+		if self.x < WORLD_RADIUS * 2 - 1:
 			self.x += 1
 
 	def moveEast(self):
-		if self.y < WORLD_RADIUS * 2:
+		if self.y < WORLD_RADIUS * 2 - 1:
 			self.y += 1
 
 	def moveWest(self):
