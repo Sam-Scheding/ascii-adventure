@@ -56,24 +56,21 @@ def main(stdscr):
         elif KeyBoard.exit(action):
             break
 
+        if world.atWorldEdge(player):
+            message = 'You look ahead but there is nothing. The world stops.'
+
         feature = world.getFeatureAtLocation(player.x, player.y)
         message = world.getFeatureMessage(feature)
 
-        if world.atWorldEdge(player):
-            info_window.clear()
-            info_window.border()
-            info_window.addstr(1, 2, 'You look ahead but there is nothing. The world stops.')
 
         if message:
             info_window.clear()
             info_window.border()
             info_window.addstr(1, 2, message)
 
+        info_window.addstr(1, 64, "COMPASS: {}-{} ".format(player.x, player.y))
         stdscr.refresh()
         info_window.refresh()
-
-
-
 
     close()
 
