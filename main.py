@@ -57,17 +57,17 @@ def main(stdscr):
             break
 
         feature = world.getFeatureAtLocation(player.x, player.y)
+        message = world.getFeatureMessage(feature)
 
         if world.atWorldEdge(player):
             info_window.clear()
             info_window.border()
             info_window.addstr(1, 2, 'You look ahead but there is nothing. The world stops.')
 
-        if feature == FEATURES['HOUSE']:
+        if message:
             info_window.clear()
             info_window.border()
-            info_window.addstr(1, 2, 'You come across a house.')
-
+            info_window.addstr(1, 2, message)
 
         stdscr.refresh()
         info_window.refresh()

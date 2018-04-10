@@ -6,6 +6,7 @@ WORLD_RADIUS = 50
 STICKINESS = 0.5 # 0 <= x <= 1
 VILLAGE_POS = (floor(WORLD_RADIUS / 2), floor(WORLD_RADIUS / 2))
 
+
 FEATURES = {
 	'ROAD': '#',
 	'BARRENS': '.',
@@ -26,6 +27,12 @@ FEATURES = {
 	'BATTLEFIELD': 'F',
 	'SWAMP': 'M',
 	'CACHE': 'U'
+}
+
+MESSAGES = {
+	
+	FEATURES['VILLAGE']: 'Home...',
+	FEATURES['HOUSE']: 'You stumble upon a house.',
 }
 
 # Sum must equal 1
@@ -172,6 +179,11 @@ class World():
 
 	def getFeatureAtLocation(self, x, y):
 		return self.world_rep[x][y]	
+
+	def getFeatureMessage(self, feature):
+		if feature in MESSAGES:
+			return MESSAGES[feature]
+		return None
 
 	def atWorldEdge(self, obj):
 	
