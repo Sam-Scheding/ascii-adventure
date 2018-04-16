@@ -1,7 +1,8 @@
-import curses, time
+import curses, time, sys
 # import npyscreen
 from curses import wrapper
-from math import floor
+import textwrap
+from math import floor, ceil
 from world import World, FEATURES
 from player import Player
 from keyboard import KeyBoard
@@ -9,11 +10,15 @@ from keyboard import KeyBoard
 VIEW_RADIUS = 16
 MAP_HEIGHT = VIEW_RADIUS * 2 + 2
 MAP_WIDTH = VIEW_RADIUS * 4
+TURN_WAIT = 0.03
+
+LOG_WIDTH = 59
+COMPASS_WIDTH = 18
+world = World()
+player = Player()
 
 def main(stdscr):
 
-    world = World()
-    player = Player()
 
     curses.noecho()  # don't print entered characters
     curses.cbreak()  # Read keys without waiting for <enter>
@@ -21,15 +26,18 @@ def main(stdscr):
 
     map_window = curses.newwin(MAP_HEIGHT + 2, MAP_WIDTH + 2, 0, 1)
     stdscr.refresh()
-    stdscr.border(0)
-    map_window.refresh()
+    stdscr.border()
 
-    info_window = curses.newwin(20, 80, 1, MAP_WIDTH + 3)
+    info_window = stdscr.subwin(20, 80, 1, MAP_WIDTH + 3)
     info_window.border()
+    compass = info_window.subwin(4, COMPASS_WIDTH, 2, MAP_WIDTH * 2)
+    message_log = info_window.subwin(10, LOG_WIDTH, 2, MAP_WIDTH + 5)
+    updateInfoWindow(compass, message_log)
+    map_window.refresh()
     stdscr.refresh()
-    info_window.refresh()
 
     while True:
+
 
         view = world.getView(VIEW_RADIUS, (player.x, player.y))
         map_window.addstr(1, 0, view)
@@ -38,6 +46,8 @@ def main(stdscr):
         map_window.addstr(int(MAP_HEIGHT / 2), int(MAP_WIDTH / 2), player.ICON)
         map_window.refresh()
 
+        time.sleep(TURN_WAIT)
+        curses.flushinp()
         action = stdscr.getch()
 
 
@@ -56,24 +66,31 @@ def main(stdscr):
         elif KeyBoard.exit(action):
             break
 
-
-        feature = world.getFeatureAtLocation(player.x, player.y)
-        message = world.getFeatureMessage(feature)
-
-        if world.atWorldEdge(player):
-            message = 'You look ahead but there is nothing. The world stops.'
-
-        if message:
-            info_window.clear()
-            info_window.border()
-            info_window.addstr(1, 2, message)
-
-        info_window.addstr(1, 64, "COMPASS: {}-{} ".format(player.x, player.y))
+        updateInfoWindow(compass, message_log)
+        info_window.refresh()  # Needs to happen after stdscr.refresh()
+        compass.refresh()
+        message_log.refresh()
         stdscr.refresh()
-        info_window.refresh()
-
     close()
 
+
+def updateInfoWindow(compass, message_log):
+
+    message_log.clear()
+    message = world.getMessage(player)
+    if message:
+        writeMessage(message_log, message, LOG_WIDTH - 2)
+    message_log.border()
+
+    compass.clear()
+    writeMessage(compass, "Compass: {}-{}".format(player.x, player.y), COMPASS_WIDTH)
+    compass.border()
+
+def writeMessage(window, message, columns):
+
+    rows = int(ceil(len(message) / columns))
+    for row in range(1, rows + 1):
+        window.addstr(row, 1, message[(row * columns) - columns:row * columns])
 
 def close():
 
