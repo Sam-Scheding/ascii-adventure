@@ -2,9 +2,9 @@ import random
 from math import floor
 from collections import defaultdict
 
-WORLD_RADIUS = 100
+RADIUS = 100
 STICKINESS = 0.5 # 0 <= x <= 1
-VILLAGE_POS = (floor(WORLD_RADIUS / 2), floor(WORLD_RADIUS / 2))
+VILLAGE_POS = (floor(RADIUS / 2), floor(RADIUS / 2))
 
 
 FEATURES = {
@@ -49,14 +49,14 @@ LANDMARKS = {
     FEATURES['IRON_MINE']: {'num': 1, 'minRadius': 5, 'maxRadius': 5, 'scene': 'ironmine', 'label': 'Iron&nbsp;Mine'},
     FEATURES['COAL_MINE']: {'num': 1, 'minRadius': 10, 'maxRadius': 10, 'scene': 'coalmine', 'label': 'Coal&nbsp;Mine'},
     FEATURES['SULPHUR_MINE']: {'num': 0, 'minRadius': 0, 'maxRadius': 0, 'scene': 'outpost', 'label': 'Sulphur&nbsp;Mine'},
-    FEATURES['GROTTO']: {'num': 10, 'minRadius': 0, 'maxRadius': WORLD_RADIUS * 1.5, 'scene': 'house', 'label': 'An&nbsp;Old&nbsp;House'},
+    FEATURES['GROTTO']: {'num': 10, 'minRadius': 0, 'maxRadius': RADIUS * 1.5, 'scene': 'house', 'label': 'An&nbsp;Old&nbsp;House'},
     FEATURES['CAVE']: {'num': 5, 'minRadius': 3, 'maxRadius': 10, 'scene': 'cave', 'label': 'A&nbsp;Cave'},
     FEATURES['TOWN']: { 'num': 10, 'minRadius': 10, 'maxRadius': 20, 'scene': 'town', 'label': 'An&nbsp;Abandoned&nbsp;Town' },
-    FEATURES['CITY']: { 'num': 20, 'minRadius': 20, 'maxRadius': WORLD_RADIUS * 1.5, 'scene': 'city', 'label': 'A&nbsp;Ruined&nbsp;City' },
+    FEATURES['CITY']: { 'num': 20, 'minRadius': 20, 'maxRadius': RADIUS * 1.5, 'scene': 'city', 'label': 'A&nbsp;Ruined&nbsp;City' },
     FEATURES['SHIP']:{ 'num': 1, 'minRadius': 28, 'maxRadius': 28, 'scene': 'ship', 'label': 'A&nbsp;Crashed&nbsp;Starship'},
-    FEATURES['BOREHOLE']: { 'num': 10, 'minRadius': 15, 'maxRadius': WORLD_RADIUS * 1.5, 'scene': 'borehole', 'label': 'A&nbsp;Borehole'},
-    FEATURES['BATTLEFIELD']: { 'num': 5, 'minRadius': 18, 'maxRadius': WORLD_RADIUS * 1.5, 'scene': 'battlefield', 'label': 'A&nbsp;Battlefield'},
-    FEATURES['SWAMP']: { 'num': 1, 'minRadius': 15, 'maxRadius': WORLD_RADIUS * 1.5, 'scene': 'swamp', 'label': 'A&nbsp;Murky&nbsp;Swamp'},
+    FEATURES['BOREHOLE']: { 'num': 10, 'minRadius': 15, 'maxRadius': RADIUS * 1.5, 'scene': 'borehole', 'label': 'A&nbsp;Borehole'},
+    FEATURES['BATTLEFIELD']: { 'num': 5, 'minRadius': 18, 'maxRadius': RADIUS * 1.5, 'scene': 'battlefield', 'label': 'A&nbsp;Battlefield'},
+    FEATURES['SWAMP']: { 'num': 1, 'minRadius': 15, 'maxRadius': RADIUS * 1.5, 'scene': 'swamp', 'label': 'A&nbsp;Murky&nbsp;Swamp'},
 }
 
 
@@ -66,7 +66,7 @@ class World():
 
     def __init__(self):
 
-        self.RADIUS = WORLD_RADIUS
+        self.RADIUS = RADIUS
         self.world_rep = self.generate()
 
     def generate(self):
@@ -180,6 +180,12 @@ class World():
     def getFeatureAtLocation(self, x, y):
         return self.world_rep[x][y] 
 
+    def getItem(self, x, y):
+
+        feature = self.getFeatureAtLocation(x, y)
+        if feature == FEATURES['FOREST']:
+            return 'Wood'
+        return None
 
     def atWorldEdge(self, obj):
     
