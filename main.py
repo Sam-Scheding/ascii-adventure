@@ -5,10 +5,12 @@ from world import World
 from player import Player
 from keyboard import KeyBoard
 from window import Window
-
+import logging
 
 def main(stdscr):
 
+    logging.basicConfig(filename='out.log',level=logging.DEBUG)
+    
     height, width = stdscr.getmaxyx()
     window = Window(height, width)
     world = World()
@@ -17,7 +19,7 @@ def main(stdscr):
 
     while True:
 
-        view = world.getView(window.VIEW_RADIUS, (player.x, player.y))
+        view = world.getView(window.getMapRadius(), (player.x, player.y))
         player.pickUp(world.getItem(player.x, player.y))
 
         kwargs = {
