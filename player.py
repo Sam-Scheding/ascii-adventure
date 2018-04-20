@@ -12,7 +12,6 @@ class Player(object):
         self.y = RADIUS
         self.turns = 0
         self.days = 0
-        self.days_per_year = 75
         self.turns_per_day = 7
         self.tiredness = 0.05
         self.inventory = Inventory()
@@ -47,5 +46,4 @@ class Player(object):
     def doTurn(self):
 
         self.turns += 1
-
         self.days = floor(self.turns / self.turns_per_day)

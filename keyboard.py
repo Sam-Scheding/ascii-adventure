@@ -24,4 +24,8 @@ class KeyBoard():
 
     @staticmethod 
     def exit(key):
-        return key in [curses.KEY_EXIT, ord('q')]
+        return key in [17, b'^Q', ord('q')]
+
+    @staticmethod 
+    def newGame(key):
+        return key in [14, b'^N']

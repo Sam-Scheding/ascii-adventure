@@ -212,12 +212,12 @@ class World():
 
         return message
 
-    def getView(self, radius, pos):
+    def getView(self, radius, player):
 
-        x_lo = pos[0] - radius
-        x_hi = pos[0] + radius
-        y_lo = pos[1] - radius
-        y_hi = pos[1] + radius
+        x_lo = player.x - radius
+        x_hi = player.x + radius
+        y_lo = player.y - radius
+        y_hi = player.y + radius
         left_space = right_space = bottom_space = 0
         rep = ''
 

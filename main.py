@@ -1,8 +1,7 @@
 from curses import wrapper
 import curses
 import time, sys
-from world import World
-from player import Player
+from game import Game
 from keyboard import KeyBoard
 from window import Window
 import logging
@@ -11,16 +10,16 @@ logging.basicConfig(filename="out.log", level=logging.DEBUG, format='[%(asctime)
 
 def main(stdscr):
 
-    
+    game = Game()
     height, width = stdscr.getmaxyx()
     window = Window(height, width)
-    world = World()
-    player = Player()
     stdscr.refresh()
 
     while True:
 
-        view = world.getView(window.getMapRadius(), (player.x, player.y))
+        world = game.world
+        player = game.player
+        view = world.getView(window.getMapRadius(), player)
         player.pickUp(world.getItem(player.x, player.y))
         player.doTurn()
         kwargs = {
@@ -35,7 +34,6 @@ def main(stdscr):
         curses.flushinp()
 
         action = stdscr.getch()
-
         if KeyBoard.up(action):
             player.moveNorth()
 
@@ -48,12 +46,17 @@ def main(stdscr):
         elif KeyBoard.right(action):
             player.moveEast()
 
+        elif KeyBoard.newGame(action):
+            game.new()
+
         elif KeyBoard.exit(action):
             break
 
-        height, width = window.fitScreen(height, width, stdscr)
-
+        height, width = window.fitScreen(height, width, stdscr) # If the user has resized the terminal, we need to re fit everything
+        game.save(action)
     window.close()
+
+
 
 if __name__ == '__main__':
 

@@ -49,7 +49,6 @@ class Window(object):
 
         # Action in loop if resize is True:
         if resize is True:
-            logging.debug('DIM IS NOW: {}-{}'.format(height, width))
             self.height, self.width = stdscr.getmaxyx()
             stdscr.clear()
             curses.resizeterm(self.height, self.width)
@@ -59,8 +58,6 @@ class Window(object):
             self.controls = Controls(parent=self)
             self.info = Info(parent=self) 
             return self.height, self.width
-        else:
-            logging.debug('TERMINAL WASNT RESIZED:{}-{}'.format(height, width))
 
         return height, width
 
@@ -77,7 +74,7 @@ class Map(object):
         self.width = int(p_width / 2 - 8)
         self.height = int(self.width / 2 + 4)  # width is stretch double, so we need to account for that
         self.radius = int(self.height / 2 - 2)  # This determines how much of the world to show the player
-        logging.debug('h: {} w: {}'.format(self.height, self.width))
+
         try:
             self.window = parent.subwin(self.height, self.width, 0, 3)
             self.window.refresh()
@@ -113,6 +110,12 @@ class Controls(object):
         self.pos_x = 1
         try:
             self.window = parent.window.subwin(self.height, self.width, self.pos_y, self.pos_x)
+            self.window.addstr(1, 1, "Controls:")
+            self.window.addstr(2, 1, "\tNorth:\tW\tAction:\tE\tQuit:\tQ")
+            self.window.addstr(3, 1, "\tWest:\tA\tNew:\tCTRL+N")
+            self.window.addstr(4, 1, "\tSouth:\tS")
+            self.window.addstr(5, 1, "\tEast:\tD")
+
             self.window.border()
             self.window.refresh()
         except curses.error as e:
