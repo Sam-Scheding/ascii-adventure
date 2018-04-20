@@ -20,3 +20,4 @@ class Inventory(object):
 
 		return sorted(["{}: {}".format(item, amount) for item, amount in self.inventory.items()])
 
+	

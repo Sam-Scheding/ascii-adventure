@@ -1,6 +1,9 @@
 import random
 from math import floor
 from collections import defaultdict
+import logging
+
+logger = logging.getLogger(__name__)
 
 RADIUS = 100
 STICKINESS = 0.5 # 0 <= x <= 1
@@ -121,11 +124,11 @@ class World():
             # Bound x and y into the map
             x = self.RADIUS + xDist
             x = max(0, x)
-            x = min(self.RADIUS * 2, x)
+            x = int(min(self.RADIUS * 2, x))
 
             y = self.RADIUS + yDist
             y = max(0, y)
-            y = min(self.RADIUS * 2, y)
+            y = int(min(self.RADIUS * 2, y))
 
 
         world_rep[x][y] = landmark
@@ -193,17 +196,16 @@ class World():
 
     def getMessage(self, player):   
 
-        message = None
+        message = ""
 
         # If the player is standing on something interesting
         feature = self.getFeatureAtLocation(player.x, player.y)
-        if feature in MESSAGES:
-            message = MESSAGES[feature]
+        message = MESSAGES.get(feature, "")
 
-        elif self.atWorldEdge(player):
+        if self.atWorldEdge(player):
             message = 'You look ahead but there is nothing. You stop to take in the void.'
 
-        if not message:
+        if message == "":
             num = random.randint(0, 100)
             if num <= 5:  # 5% chance
                 message = 'A wave of existential dread sweeps over you.'

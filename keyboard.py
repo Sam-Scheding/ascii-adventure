@@ -1,18 +1,27 @@
+"""
+KeyBoard is a static class, that binds pey presses to actions
+"""
+
 import curses
 
 class KeyBoard():
 
-	def up(key):
-		return key in [curses.KEY_UP, ord('w')]
+    @staticmethod 
+    def up(key):
+        return key in [curses.KEY_UP, ord('w')]
 
-	def down(key):
-		return key in [curses.KEY_DOWN, ord('s')]
+    @staticmethod 
+    def down(key):
+        return key in [curses.KEY_DOWN, ord('s')]
 
-	def left(key):
-		return key in [curses.KEY_LEFT, ord('a')]
+    @staticmethod 
+    def left(key):
+        return key in [curses.KEY_LEFT, ord('a')]
 
-	def right(key):
-		return key in [curses.KEY_RIGHT, ord('d')]
+    @staticmethod 
+    def right(key):
+        return key in [curses.KEY_RIGHT, ord('d')]
 
-	def exit(key):
-		return key in [curses.KEY_EXIT, ord('q')]
+    @staticmethod 
+    def exit(key):
+        return key in [curses.KEY_EXIT, ord('q')]

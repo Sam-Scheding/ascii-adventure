@@ -7,9 +7,10 @@ from keyboard import KeyBoard
 from window import Window
 import logging
 
+logging.basicConfig(filename="out.log", level=logging.DEBUG, format='[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s')
+
 def main(stdscr):
 
-    logging.basicConfig(filename='out.log',level=logging.DEBUG)
     
     height, width = stdscr.getmaxyx()
     window = Window(height, width)
@@ -21,12 +22,11 @@ def main(stdscr):
 
         view = world.getView(window.getMapRadius(), (player.x, player.y))
         player.pickUp(world.getItem(player.x, player.y))
-
+        player.doTurn()
         kwargs = {
             'map_view': view, 
             'message': world.getMessage(player), 
-            'player_pos': (player.x, player.y), 
-            'inventory': player.getInventory(),
+            'player': player, 
         }
 
         window.update(**kwargs)
@@ -51,6 +51,7 @@ def main(stdscr):
         elif KeyBoard.exit(action):
             break
 
+        height, width = window.fitScreen(height, width, stdscr)
 
     window.close()
 
