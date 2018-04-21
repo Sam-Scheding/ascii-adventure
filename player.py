@@ -6,15 +6,26 @@ class Player(object):
 
     ICON = '@'
 
-    def __init__(self):
+    def __init__(self, state=None):
         super(Player, self).__init__()
-        self.x = RADIUS
-        self.y = RADIUS
-        self.turns = 0
-        self.days = 0
+
         self.turns_per_day = 7
-        self.tiredness = 0.05
-        self.inventory = Inventory()
+
+        if state != None:
+            self.x = state['x']
+            self.y = state['y']
+            self.turns = state['turns']
+            self.days = state['days']
+            self.tiredness = state['tiredness']
+            self.inventory = Inventory(inventory=state['inventory'])
+        else:
+
+            self.x = RADIUS
+            self.y = RADIUS
+            self.turns = 0
+            self.days = 0
+            self.tiredness = 0.05
+            self.inventory = Inventory()
 
     def getPosition(self):
         return (self.x, self.y)
@@ -43,7 +54,7 @@ class Player(object):
     def getInventory(self):
         return self.inventory.get()
 
-    def doTurn(self):
+    def getOlder(self):
 
         self.turns += 1
         self.days = floor(self.turns / self.turns_per_day)

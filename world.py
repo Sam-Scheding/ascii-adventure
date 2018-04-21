@@ -67,10 +67,13 @@ LANDMARKS = {
 
 class World():
 
-    def __init__(self):
+    def __init__(self, rep=None):
 
         self.RADIUS = RADIUS
-        self.world_rep = self.generate()
+        if rep != None:
+            self.world_rep = rep
+        else:
+            self.world_rep = self.generate()
 
     def generate(self):
 

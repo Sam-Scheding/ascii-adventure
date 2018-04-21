@@ -2,10 +2,13 @@ from collections import defaultdict
 
 class Inventory(object):
 
-	def __init__(self):
+	def __init__(self, inventory=None):
 		super(Inventory, self).__init__()
 
-		self.inventory = defaultdict(int)
+		if inventory != None:
+			self.inventory = defaultdict(int, inventory)
+		else:
+			self.inventory = defaultdict(int)
 
 	def add(self, item):
 		self.inventory[item] += 1

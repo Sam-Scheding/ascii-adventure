@@ -41,6 +41,14 @@ class Window(object):
         for row in range(1, rows + 1):
             window.addstr(row, 1, message[(row * columns) - columns:row * columns])
 
+    def showLoading(self):
+
+        self.map.showLoading('Loading...')
+        # The border of the map window is on top of the controls window
+        # So we need to reprint the controls to stop them getting hidden under the map
+        self.controls.showControls()
+
+
     def fitScreen(self, height, width, stdscr):
 
         # Check if screen was re-sized (True or False)
@@ -77,13 +85,23 @@ class Map(object):
 
         try:
             self.window = parent.subwin(self.height, self.width, 0, 3)
+            # self.window.border()
             self.window.refresh()
         except curses.error as e:
             logging.error("Screen was too small: {}".format(e))
             sys.exit("Your terminal screen is too small")
 
+    def showLoading(self, text, clear=True):
 
-    def update(self, view, player):
+        if clear == True:
+            self.window.clear()
+        self.window.addstr(int(self.radius + 1), int(self.radius * 2), text)  # Integer division
+        # self.window.border()
+        self.window.refresh()
+
+    def update(self, view, player, loading=False):
+
+
         try:
             self.window.addstr(1, 0, view)
             # Show player icon in the middle of the view
@@ -110,6 +128,12 @@ class Controls(object):
         self.pos_x = 1
         try:
             self.window = parent.window.subwin(self.height, self.width, self.pos_y, self.pos_x)
+            self.showControls()
+        except Exception as e:
+            logging.error("Screen was too small: {}".format(e))
+
+    def showControls(self):
+        try:
             self.window.addstr(1, 1, "Controls:")
             self.window.addstr(2, 1, "\tNorth:\tW\tAction:\tE\tQuit:\tQ")
             self.window.addstr(3, 1, "\tWest:\tA\tNew:\tCTRL+N")
@@ -118,10 +142,9 @@ class Controls(object):
 
             self.window.border()
             self.window.refresh()
-        except curses.error as e:
+        except Exception as e:
             logging.error("Screen was too small: {}".format(e))
             sys.exit("Your terminal screen is too small")
-
 
 class Info(object):
 
