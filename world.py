@@ -26,7 +26,7 @@ FEATURES = {
     # 'CITY': 'Y',
     'OUTPOST': 'P',
     'SHIP': 'W',
-    'BOREHOLE': 'B',
+    'BUILDING': 'B',
     'BATTLEFIELD': 'F',
     'SWAMP': 'M',
     'CACHE': 'U'
@@ -57,7 +57,7 @@ LANDMARKS = {
     FEATURES['TOWN']: { 'num': 10, 'minRadius': 10, 'maxRadius': 20, 'scene': 'town', 'label': 'An&nbsp;Abandoned&nbsp;Town' },
     # FEATURES['CITY']: { 'num': 20, 'minRadius': 20, 'maxRadius': RADIUS * 1.5, 'scene': 'city', 'label': 'A&nbsp;Ruined&nbsp;City' },
     FEATURES['SHIP']:{ 'num': 1, 'minRadius': 28, 'maxRadius': 28, 'scene': 'ship', 'label': 'A&nbsp;Crashed&nbsp;Starship'},
-    FEATURES['BOREHOLE']: { 'num': 10, 'minRadius': 15, 'maxRadius': RADIUS * 1.5, 'scene': 'borehole', 'label': 'A&nbsp;Borehole'},
+    # FEATURES['BOREHOLE']: { 'num': 10, 'minRadius': 15, 'maxRadius': RADIUS * 1.5, 'scene': 'borehole', 'label': 'A&nbsp;Borehole'},
     FEATURES['BATTLEFIELD']: { 'num': 5, 'minRadius': 18, 'maxRadius': RADIUS * 1.5, 'scene': 'battlefield', 'label': 'A&nbsp;Battlefield'},
     FEATURES['SWAMP']: { 'num': 1, 'minRadius': 15, 'maxRadius': RADIUS * 1.5, 'scene': 'swamp', 'label': 'A&nbsp;Murky&nbsp;Swamp'},
 }
@@ -73,7 +73,9 @@ class World():
 
     def __init__(self, rep=None):
 
-        self.RADIUS = RADIUS
+        self.radius = RADIUS
+        self.message = ""
+
         if rep != None:
             self.world_rep = rep
         else:
@@ -82,26 +84,26 @@ class World():
     def generate(self):
 
         # Create a 2D array with the correct dimensions 
-        world_rep = [[FEATURES['BARRENS'] for x in range(self.RADIUS * 2 + 1)] for y in range(self.RADIUS * 2 + 1)]
+        world_rep = [[FEATURES['BARRENS'] for x in range(self.radius * 2 + 1)] for y in range(self.radius * 2 + 1)]
         # The Village is always at the exact center
-        world_rep[self.RADIUS][self.RADIUS] = FEATURES['VILLAGE']
+        world_rep[self.radius][self.radius] = FEATURES['VILLAGE']
 
         # Spiral out from there
-        for r in range(1, self.RADIUS + 1):
+        for r in range(1, self.radius + 1):
             for t in range(0, r * 8):
 
                 if t < 2 * r:
-                    x = self.RADIUS - r + t
-                    y = self.RADIUS - r
+                    x = self.radius - r + t
+                    y = self.radius - r
                 elif t < 4 * r:
-                    x = self.RADIUS + r
-                    y = self.RADIUS - (3 * r) + t
+                    x = self.radius + r
+                    y = self.radius - (3 * r) + t
                 elif t < 6 * r:
-                    x = self.RADIUS + (5 * r) - t
-                    y = self.RADIUS + r
+                    x = self.radius + (5 * r) - t
+                    y = self.radius + r
                 else:
-                    x = self.RADIUS - r
-                    y = self.RADIUS + (7 * r) - t
+                    x = self.radius - r
+                    y = self.radius + (7 * r) - t
 
                 world_rep[x][y] = self.chooseTile(x, y, world_rep)
 
@@ -140,13 +142,12 @@ class World():
 
         radius = 10 #random.randint(CITIES['RADIUS_MIN'], CITIES['RADIUS_MAX'] + 1)
         size = radius * 2 + 1
-        spacer = ' '
 
         for x in range(x_pos, x_pos + size):
             for y in range(y_pos, y_pos + size):
 
                 if x % 3 != 0 and y % 3 != 0:  # create buildings in a Manhattan grid
-                    tile = 'B'
+                    tile = FEATURES['BUILDING']
                 else:
                     tile = rep[x][y]
                 tile = decay(tile, x - x_pos, y - y_pos, radius)
@@ -157,7 +158,7 @@ class World():
 
     def placeLandmark(self, minRadius, maxRadius, landmark, world_rep):
 
-        x = y = int(self.RADIUS)
+        x = y = int(self.radius)
 
         while not self.isTerrain(world_rep[x][y]):
 
@@ -172,13 +173,13 @@ class World():
 
 
             # Bound x and y into the map
-            x = self.RADIUS + xDist
+            x = self.radius + xDist
             x = max(0, x)
-            x = int(min(self.RADIUS * 2, x))
+            x = int(min(self.radius * 2, x))
 
-            y = self.RADIUS + yDist
+            y = self.radius + yDist
             y = max(0, y)
-            y = int(min(self.RADIUS * 2, y))
+            y = int(min(self.radius * 2, y))
 
 
         world_rep[x][y] = landmark
@@ -191,8 +192,8 @@ class World():
     def chooseTile(self, x, y, world_rep):
         adjacent = [
             world_rep[x][y-1] if y > 0 else None,
-            world_rep[x][y+1] if y < self.RADIUS * 2 else None,
-            world_rep[x+1][y] if x < self.RADIUS * 2 else None,
+            world_rep[x][y+1] if y < self.radius * 2 else None,
+            world_rep[x+1][y] if x < self.radius * 2 else None,
             world_rep[x-1][y] if x > 0 else None
         ]
 
@@ -230,37 +231,53 @@ class World():
         
         return FEATURES['BARRENS']
 
-    def getFeatureAtLocation(self, x, y):
+    def walkable(self, x, y):
+    
+        # If the player is trying to walk out of the map
+        if x >= self.radius * 2 - 1 or y >= self.radius * 2 - 1 or x <= 0 or y <= 0:
+            self.message = 'You look ahead but there is nothing. You stop to take in the void.'
+            return False
+
+        tile = self.getTile(x, y)
+        logger.debug('HERE: {}'.format(tile))
+        if tile == FEATURES['BUILDING']:
+            self.message = 'You come across a building.' 
+            return False
+
+        if tile == FEATURES['WATER']:
+            self.message = 'You cannot swim.'
+            return False
+
+        self.message = ""
+        return True 
+
+    def getTile(self, x, y):
         return self.world_rep[x][y] 
 
     def getItem(self, x, y):
 
-        feature = self.getFeatureAtLocation(x, y)
+        feature = self.getTile(x, y)
         if feature == FEATURES['FOREST']:
             return 'Wood'
         return None
 
-    def atWorldEdge(self, obj):
-    
-        return obj.y >= self.RADIUS * 2 - 1 or obj.x >= self.RADIUS * 2 - 1 or obj.y <= 0 or obj.x <= 0
-
     def getMessage(self, player):   
 
-        message = ""
+        return self.message
+        # message = ""
 
-        # If the player is standing on something interesting
-        feature = self.getFeatureAtLocation(player.x, player.y)
-        message = MESSAGES.get(feature, "")
+        # # If the player is standing on something interesting
+        # feature = self.getTile(player.x, player.y)
+        # message = MESSAGES.get(feature, "")
 
-        if self.atWorldEdge(player):
-            message = 'You look ahead but there is nothing. You stop to take in the void.'
+        # walkable = self.walkable(player.x, player.y)
 
-        if message == "":
-            num = random.randint(0, 100)
-            if num <= 5:  # 5% chance
-                message = 'A wave of existential dread sweeps over you.'
+        # if self.message == "":
+        #     num = random.randint(0, 100)
+        #     if num <= 5:  # 5% chance
+        #         self.message = 'A wave of existential dread sweeps over you.'
 
-        return message
+        # return message
 
     def getView(self, radius, player):
 
@@ -277,14 +294,14 @@ class World():
             y_lo = 0
 
         # Fill in the view for y > radius * 2 with *
-        elif y_hi > self.RADIUS * 2 - 1:
-            right_space = y_hi - (self.RADIUS * 2)
-            y_hi = self.RADIUS * 2
+        elif y_hi > self.radius * 2 - 1:
+            right_space = y_hi - (self.radius * 2)
+            y_hi = self.radius * 2
 
         # Fill in the view for x > radius * 2 with *
-        if x_hi > self.RADIUS * 2 - 1:
-            bottom_space = x_hi - (self.RADIUS * 2 - 1)
-            x_hi = self.RADIUS * 2 - 1
+        if x_hi > self.radius * 2 - 1:
+            bottom_space = x_hi - (self.radius * 2 - 1)
+            x_hi = self.radius * 2 - 1
 
         # Fill in the map for x < 0 with *
         while x_lo < 0:

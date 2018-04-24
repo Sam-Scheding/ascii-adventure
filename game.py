@@ -8,6 +8,7 @@ class Game(object):
     """docstring for Game"""
     def __init__(self, load=False):
         super(Game, self).__init__()
+        self.keyboard = KeyBoard()
         if load == True:
             self.load()
         else:
@@ -71,16 +72,19 @@ class Game(object):
 
     def step(self, action, window, reminisce=False, delay=0):
 
-        if KeyBoard.up(action):
+        delta = self.keyboard.getTransformation(action)
+        walkable = self.world.walkable(self.player.x + delta[1], self.player.y + delta[0])
+
+        if KeyBoard.up(action) and walkable:
             self.player.moveNorth()
 
-        elif KeyBoard.left(action):
+        elif KeyBoard.left(action) and walkable:
             self.player.moveWest()
 
-        elif KeyBoard.down(action):
+        elif KeyBoard.down(action) and walkable:
             self.player.moveSouth()
 
-        elif KeyBoard.right(action):
+        elif KeyBoard.right(action) and walkable:
             self.player.moveEast()
 
         elif not reminisce and KeyBoard.newGame(action):

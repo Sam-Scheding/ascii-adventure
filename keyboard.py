@@ -3,8 +3,25 @@ KeyBoard is a static class, that binds pey presses to actions
 """
 
 import curses
+from collections import defaultdict
+
+NORTH = (0, -1)
+SOUTH = (0,  1)
+EAST =  (1,  0)
+WEST = (-1,  0)
+
+SHIFT = {
+    ord('w'): NORTH,
+    ord('s'): SOUTH,
+    ord('d'): EAST,
+    ord('a'): WEST,
+}
 
 class KeyBoard():
+
+    def getTransformation(self, key):
+        shift = defaultdict(lambda: (0,0), SHIFT)
+        return shift[key]
 
     @staticmethod 
     def up(key):
