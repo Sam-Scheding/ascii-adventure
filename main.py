@@ -4,7 +4,7 @@ import time, sys
 from game import Game
 from window import Window
 import logging
-from keyboard import KeyBoard
+
 logging.basicConfig(filename="out.log", level=logging.DEBUG, format='[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s')
 
 def main(stdscr):
@@ -14,7 +14,7 @@ def main(stdscr):
     window = Window(height, width)
     stdscr.refresh()
 
-    game.reminisce(window)  # Load the players previous moves
+    # game.reminisce(window)  # Load the players previous moves
 
     while True:
 
@@ -31,34 +31,10 @@ def main(stdscr):
         }
 
         window.update(**kwargs)
-        time.sleep(player.tiredness)
         curses.flushinp()
         action = stdscr.getch()
-
-        if KeyBoard.up(action):
-            player.moveNorth()
-
-        elif KeyBoard.left(action):
-            player.moveWest()
-
-        elif KeyBoard.down(action):
-            player.moveSouth()
-
-        elif KeyBoard.right(action):
-            player.moveEast()
-
-        elif KeyBoard.newGame(action):
-            window.showLoading()
-            game = Game(load=False)
-
-        elif KeyBoard.exit(action):
-            window.close()
-            sys.exit(0)    
-
-
+        game.step(action, window, delay=player.tiredness)
         game.save(action)
-
-
         height, width = window.fitScreen(height, width, stdscr) # If the user has resized the terminal, we need to re fit everything
 
 
