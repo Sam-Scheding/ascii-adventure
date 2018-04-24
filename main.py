@@ -14,7 +14,7 @@ def main(stdscr):
     window = Window(height, width)
     stdscr.refresh()
 
-    # reminisce(game)  # Load the players previous moves
+    game.reminisce(window)  # Load the players previous moves
 
     while True:
 
@@ -61,17 +61,6 @@ def main(stdscr):
 
         height, width = window.fitScreen(height, width, stdscr) # If the user has resized the terminal, we need to re fit everything
 
-def reminisce(game):
-
-    moves = game.getMoves()
-    for move in moves:
-        world = game.world
-        player = game.player
-        view = world.getView(window.getMapRadius(), player)
-
-        if move in [14, 17]:  # skip newgame and quit moves 
-            continue
-        gameStep(move)
 
 
 

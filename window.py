@@ -20,10 +20,10 @@ class Window(object):
         self.controls = Controls(parent=self)
         self.info = Info(parent=self) 
 
-    def update(self, **kwargs):
+    def update(self, map_view=None, player=None, message=''):
 
-        self.map.update(kwargs['map_view'], kwargs['player'])
-        self.info.update(kwargs['message'], kwargs['player'])
+        self.map.update(map_view, player)
+        self.info.update(message, player)
         self.window.refresh()
 
     def getMapRadius(self):
@@ -39,7 +39,8 @@ class Window(object):
 
         rows = int(ceil(len(message) / columns))
         for row in range(1, rows + 1):
-            window.addstr(row, 1, message[(row * columns) - columns:row * columns])
+            line = message[(row * columns) - columns:row * columns]
+            window.addstr(row, 1, line.lstrip())
 
     def showLoading(self):
 
@@ -280,4 +281,5 @@ class Messages(object):
 
         rows = int(ceil(len(message) / columns))
         for row in range(1, rows + 1):
-            self.window.addstr(row, 1, message[(row * columns) - columns:row * columns])
+            line = message[(row * columns) - columns:row * columns].lstrip()
+            self.window.addstr(row, 1, line)

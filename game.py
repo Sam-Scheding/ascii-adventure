@@ -1,7 +1,7 @@
 from world import World
 from player import Player
 from keyboard import KeyBoard
-import json
+import json, time
 from collections import defaultdict
 
 class Game(object):
@@ -13,13 +13,19 @@ class Game(object):
         else:
             self.world = World()
             self.player = Player()
+            moves = open('moves.json', 'w')
+            moves.write('[]')  # Prob a better way to do this with a default dict
 
     def load(self):
-        state = defaultdict(dict, json.load(open('state.json', 'r')))
-        self.world = World(rep=state['world'])
-        self.player = Player(state=state['player'])
-        moves = open('moves.json', 'w')
-        moves.write('[]')
+
+        try:
+            state = defaultdict(dict, json.load(open('state.json', 'r')))
+            self.world = World(rep=state['world'])
+            self.player = Player(state=state['player'])
+        except FileNotFoundError as e:  # On the game's first run, the state and moves json wont exist, so just generate a new world and player
+            self.world = World()
+            self.player = Player()
+
 
 
     def save(self, move):
@@ -47,5 +53,29 @@ class Game(object):
         return json.load(open('moves.json', 'r'))
 
 
+    def reminisce(self, window):
 
+        moves = self.getMoves()
+        world = self.world
+        player = self.player
+        player.x = 100
+        player.y = 100
+        for action in moves:
 
+            view = world.getView(window.getMapRadius(), player)
+
+            window.update(map_view=view, player=player, message="You look back on your life and realise how little you have accomplished")
+
+            if KeyBoard.up(action):
+                player.moveNorth()
+
+            elif KeyBoard.left(action):
+                player.moveWest()
+
+            elif KeyBoard.down(action):
+                player.moveSouth()
+
+            elif KeyBoard.right(action):
+                player.moveEast()
+
+            time.sleep(0.02)
