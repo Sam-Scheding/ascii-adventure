@@ -138,7 +138,7 @@ class Controls(object):
             self.window.addstr(1, 1, "Controls:")
             self.window.addstr(2, 1, "\tNorth:\tW\tAction:\tE\tQuit:\tQ")
             self.window.addstr(3, 1, "\tWest:\tA\tNew:\tCTRL+N")
-            self.window.addstr(4, 1, "\tSouth:\tS")
+            self.window.addstr(4, 1, "\tSouth:\tS\tSave:\tAuto")
             self.window.addstr(5, 1, "\tEast:\tD")
 
             self.window.border()

@@ -1,5 +1,5 @@
 import random
-from math import floor
+from math import floor, sqrt
 from collections import defaultdict
 import logging
 
@@ -23,7 +23,7 @@ FEATURES = {
     'GROTTO': 'G',
     'CAVE': 'V',
     'TOWN': 'O',
-    'CITY': 'Y',
+    # 'CITY': 'Y',
     'OUTPOST': 'P',
     'SHIP': 'W',
     'BOREHOLE': 'B',
@@ -55,14 +55,18 @@ LANDMARKS = {
     FEATURES['GROTTO']: {'num': 10, 'minRadius': 0, 'maxRadius': RADIUS * 1.5, 'scene': 'house', 'label': 'An&nbsp;Old&nbsp;House'},
     FEATURES['CAVE']: {'num': 5, 'minRadius': 3, 'maxRadius': 10, 'scene': 'cave', 'label': 'A&nbsp;Cave'},
     FEATURES['TOWN']: { 'num': 10, 'minRadius': 10, 'maxRadius': 20, 'scene': 'town', 'label': 'An&nbsp;Abandoned&nbsp;Town' },
-    FEATURES['CITY']: { 'num': 20, 'minRadius': 20, 'maxRadius': RADIUS * 1.5, 'scene': 'city', 'label': 'A&nbsp;Ruined&nbsp;City' },
+    # FEATURES['CITY']: { 'num': 20, 'minRadius': 20, 'maxRadius': RADIUS * 1.5, 'scene': 'city', 'label': 'A&nbsp;Ruined&nbsp;City' },
     FEATURES['SHIP']:{ 'num': 1, 'minRadius': 28, 'maxRadius': 28, 'scene': 'ship', 'label': 'A&nbsp;Crashed&nbsp;Starship'},
     FEATURES['BOREHOLE']: { 'num': 10, 'minRadius': 15, 'maxRadius': RADIUS * 1.5, 'scene': 'borehole', 'label': 'A&nbsp;Borehole'},
     FEATURES['BATTLEFIELD']: { 'num': 5, 'minRadius': 18, 'maxRadius': RADIUS * 1.5, 'scene': 'battlefield', 'label': 'A&nbsp;Battlefield'},
     FEATURES['SWAMP']: { 'num': 1, 'minRadius': 15, 'maxRadius': RADIUS * 1.5, 'scene': 'swamp', 'label': 'A&nbsp;Murky&nbsp;Swamp'},
 }
 
-
+CITIES = {
+    'RADIUS_MIN': 4,
+    'RADIUS_MAX': 12,
+    'NUM_CITIES': 5,
+}
 
 
 class World():
@@ -106,7 +110,50 @@ class World():
             for l in range(0, landmark['num']):
                 self.placeLandmark(landmark['minRadius'], landmark['maxRadius'], key, world_rep)
 
+        # for city in range(0, CITIES['NUM_CITIES'] + 1):
+        self.generateCity(world_rep, 75, 75)
         return world_rep
+
+
+    def generateCity(self, rep, x_pos, y_pos):
+
+        # Simulates erosion
+        def decay(tile, x, y, radius):
+
+            # get the distance from the current square to the center of the city
+            x_dist = (x - radius) * (x - radius) * 2
+            y_dist = (y - radius) * (y - radius) * 2
+            dist = int(sqrt(x_dist + y_dist)) 
+            noise = random.randint(0, radius)
+            """
+                This implicitely creates a 2D array that looks like:
+                    323
+                    212
+                    323
+                
+            The array, coupled with the noise, makes it less likely that a building will decay 
+            the closer they are to the city center 
+            """
+            if dist + noise > (13 * radius / 10):
+                tile = '.'
+            return tile
+
+        radius = 10 #random.randint(CITIES['RADIUS_MIN'], CITIES['RADIUS_MAX'] + 1)
+        size = radius * 2 + 1
+        spacer = ' '
+
+        for x in range(x_pos, x_pos + size):
+            for y in range(y_pos, y_pos + size):
+
+                if x % 3 != 0 and y % 3 != 0:  # create buildings in a Manhattan grid
+                    tile = 'B'
+                else:
+                    tile = rep[x][y]
+                tile = decay(tile, x - x_pos, y - y_pos, radius)
+
+                rep[x][y] = tile
+
+
 
     def placeLandmark(self, minRadius, maxRadius, landmark, world_rep):
 
