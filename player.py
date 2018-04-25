@@ -24,7 +24,7 @@ class Player(object):
             self.y = RADIUS
             self.turns = 0
             self.days = 0
-            self.tiredness = 0.05
+            self.tiredness = 0  # 0.05
             self.inventory = Inventory()
 
     def getPosition(self):
@@ -32,20 +32,16 @@ class Player(object):
 
 
     def moveNorth(self):
-        if self.x > 0:
-            self.x -= 1
+        self.x -= 1
 
     def moveSouth(self):
-        if self.x < RADIUS * 2 - 1:
-            self.x += 1
+        self.x += 1
 
     def moveEast(self):
-        if self.y < RADIUS * 2 - 1:
-            self.y += 1
+        self.y += 1
 
     def moveWest(self):
-        if self.y > 0:
-            self.y -= 1
+        self.y -= 1
 
     def pickUp(self, item):
         if item:

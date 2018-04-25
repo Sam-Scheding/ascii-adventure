@@ -3,6 +3,9 @@ from player import Player
 from keyboard import KeyBoard
 import json, time, sys
 from collections import defaultdict
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Game(object):
     """docstring for Game"""
@@ -24,7 +27,7 @@ class Game(object):
 
         try:
             state = defaultdict(dict, json.load(open('state.json', 'r')))
-            self.world = World(rep=state['world'])
+            self.world = World(rep=state['world']['rep'], cities=state['world']['cities'])
             self.player = Player(state=state['player'])
         except FileNotFoundError as e:  # On the game's first run, the state and moves json wont exist, so just generate a new world and player
             self.new()
@@ -41,7 +44,10 @@ class Game(object):
                 'tiredness': self.player.tiredness,
                 'inventory': self.player.inventory.inventory,
             },
-            'world': self.world.world_rep,
+            'world': {
+                'rep': self.world.world_rep,
+                'cities': self.world.cities,
+            },
         }
 
         json.dump(save_state, open("state.json", "w"))
@@ -73,7 +79,9 @@ class Game(object):
     def step(self, action, window, reminisce=False, delay=0):
 
         delta = self.keyboard.getTransformation(action)
-        walkable = self.world.walkable(self.player.x + delta[1], self.player.y + delta[0])
+
+        # I have no idea why this works
+        walkable = self.world.walkable(self.player.x + delta[0], self.player.y + delta[1])
 
         if KeyBoard.up(action) and walkable:
             self.player.moveNorth()
@@ -86,6 +94,12 @@ class Game(object):
 
         elif KeyBoard.right(action) and walkable:
             self.player.moveEast()
+
+        elif KeyBoard.enter(action):
+            tile = self.world.getTile(self.player.x, self.player.y)
+            next_tile = self.world.getTile(self.player.x + delta[0], self.player.y + delta[1])
+            if tile == 'T':
+                self.world.message = 'A tree'
 
         elif not reminisce and KeyBoard.newGame(action):
             window.showLoading()

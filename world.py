@@ -5,14 +5,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-RADIUS = 100
+RADIUS = 128
 STICKINESS = 0.5 # 0 <= x <= 1
 VILLAGE_POS = (floor(RADIUS / 2), floor(RADIUS / 2))
 
 
 FEATURES = {
     'ROAD': '#',
-    'BARRENS': '.',
+    'BARRENS': ' ',
     'VILLAGE': 'H',
     'IRON_MINE': 'I',
     'COAL_MINE': 'C',
@@ -30,12 +30,6 @@ FEATURES = {
     'BATTLEFIELD': 'F',
     'SWAMP': 'M',
     'CACHE': 'U'
-}
-
-MESSAGES = {
-    
-    FEATURES['VILLAGE']: 'Home...',
-    FEATURES['GROTTO']: 'You stumble upon a grotto.',
 }
 
 # Sum must equal 1
@@ -65,16 +59,17 @@ LANDMARKS = {
 CITIES = {
     'RADIUS_MIN': 4,
     'RADIUS_MAX': 12,
-    'NUM_CITIES': 5,
+    'NUM_CITIES': 10,
 }
 
 
 class World():
 
-    def __init__(self, rep=None):
+    def __init__(self, rep=None, cities=[]):
 
         self.radius = RADIUS
         self.message = ""
+        self.cities = cities
 
         if rep != None:
             self.world_rep = rep
@@ -112,12 +107,24 @@ class World():
             for l in range(0, landmark['num']):
                 self.placeLandmark(landmark['minRadius'], landmark['maxRadius'], key, world_rep)
 
-        # for city in range(0, CITIES['NUM_CITIES'] + 1):
-        self.generateCity(world_rep, 75, 75)
+        # Generate cities at random coordinates
+        for city in range(0, CITIES['NUM_CITIES'] + 1):
+
+            city_radius = random.randint(CITIES['RADIUS_MIN'], CITIES['RADIUS_MAX'] + 1)
+            # choose a location that won't overwrite the player's house
+            x_choice = random.choice([(0, (self.radius - (city_radius * 2 + 1))), (self.radius + 1, (self.radius * 2) - (city_radius * 2 + 1))])
+            y_choice = random.choice([(0, (self.radius - (city_radius * 2 + 1))), (self.radius + 1, (self.radius * 2) - (city_radius * 2 + 1))])
+            x = random.randint(*x_choice)
+            y = random.randint(*y_choice)
+            # logger.debug('radius: {}'.format(city_radius))
+            # logger.debug('x: {}'.format(x))
+            # logger.debug('y: {}'.format(y))
+            self.generateCity(world_rep, x, y, city_radius)
+            self.cities += [{'x': x, 'y': y, 'radius': city_radius }]
         return world_rep
 
 
-    def generateCity(self, rep, x_pos, y_pos):
+    def generateCity(self, rep, x_pos, y_pos, radius):
 
         # Simulates erosion
         def decay(tile, x, y, radius):
@@ -137,10 +144,9 @@ class World():
             the closer they are to the city center 
             """
             if dist + noise > (13 * radius / 10):
-                tile = '.'
+                tile = FEATURES['BARRENS']
             return tile
 
-        radius = 10 #random.randint(CITIES['RADIUS_MIN'], CITIES['RADIUS_MAX'] + 1)
         size = radius * 2 + 1
 
         for x in range(x_pos, x_pos + size):
@@ -234,19 +240,30 @@ class World():
     def walkable(self, x, y):
     
         # If the player is trying to walk out of the map
-        if x >= self.radius * 2 - 1 or y >= self.radius * 2 - 1 or x <= 0 or y <= 0:
+        if x > self.radius * 2 - 1 or y > self.radius * 2 - 1 or x < 0 or y < 0:
             self.message = 'You look ahead but there is nothing. You stop to take in the void.'
             return False
 
+
         tile = self.getTile(x, y)
-        logger.debug('HERE: {}'.format(tile))
+
         if tile == FEATURES['BUILDING']:
-            self.message = 'You come across a building.' 
+            self.message = 'A building. Do you want to <enter>?' 
             return False
 
         if tile == FEATURES['WATER']:
             self.message = 'You cannot swim.'
             return False
+
+        if tile == FEATURES['VILLAGE']:
+            self.message = 'Home...'
+            return True
+
+        # If the player is near a city
+        for city in self.cities:
+            if city['x'] <= x <= city['x'] + city['radius'] * 2 and city['y'] <= y <= city['y'] + city['radius'] * 2:
+                self.message = "Ahead of you, a city slowly crumbles to dust."
+                return True
 
         self.message = ""
         return True 
