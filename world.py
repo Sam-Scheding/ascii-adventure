@@ -127,12 +127,12 @@ class World():
     def generateCity(self, rep, x_pos, y_pos, radius):
 
         # Simulates erosion
-        def decay(tile, x, y, radius):
+        def decay(tile, x, y, radius, prev_tile):
 
             # get the distance from the current square to the center of the city
             x_dist = (x - radius) * (x - radius) * 2
             y_dist = (y - radius) * (y - radius) * 2
-            dist = int(sqrt(x_dist + y_dist)) 
+            dist = int(sqrt(x_dist + y_dist))  # Distance from the center of the city
             noise = random.randint(0, radius)
             """
                 This implicitely creates a 2D array that looks like:
@@ -143,8 +143,13 @@ class World():
             The array, coupled with the noise, makes it less likely that a building will decay 
             the closer they are to the city center 
             """
-            if dist + noise > (13 * radius / 10):
-                tile = FEATURES['BARRENS']
+            if dist + noise > (13 * radius / 10):  # pseudo-Gaussian random probability distribution to decay the tile to what it was before we overlayed the city
+
+                # If the city is in a forest, only have trees on the edge of the city (looks nicer)
+                if dist < radius:
+                    tile = FEATURES['BARRENS']
+                else:
+                    tile = prev_tile
             return tile
 
         size = radius * 2 + 1
@@ -152,11 +157,13 @@ class World():
         for x in range(x_pos, x_pos + size):
             for y in range(y_pos, y_pos + size):
 
+                prev_tile = rep[x][y]
+
                 if x % 3 != 0 and y % 3 != 0:  # create buildings in a Manhattan grid
                     tile = FEATURES['BUILDING']
                 else:
                     tile = rep[x][y]
-                tile = decay(tile, x - x_pos, y - y_pos, radius)
+                tile = decay(tile, x - x_pos, y - y_pos, radius, prev_tile)
 
                 rep[x][y] = tile
 
