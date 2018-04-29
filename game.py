@@ -9,19 +9,18 @@ logger = logging.getLogger(__name__)
 
 class Game(object):
     """docstring for Game"""
-    def __init__(self, load=False):
+    def __init__(self, seed=1):
         super(Game, self).__init__()
-        self.keyboard = KeyBoard()
-        if load == True:
-            self.load()
-        else:
-            self.new()
-            moves = open('moves.json', 'w')
-            moves.write('[]')  # Prob a better way to do this with a default dict
+        self.keyboard = KeyBoard()        
+        self.world = None
+        self.player = None
 
     def new(self):
-            self.world = World()
-            self.player = Player()
+
+        moves = open('moves.json', 'w')
+        moves.write(str(list()))  # Write an empty list to moves.json
+        self.world = World()
+        self.player = Player()
 
     def load(self):
 
@@ -53,14 +52,21 @@ class Game(object):
         json.dump(save_state, open("state.json", "w"))
 
         # Get the moves list from moves.json, append the new move, and then save it to moves.json again.
-        moves = json.load(open('moves.json', 'r'))
+        try:
+            moves = json.load(open('moves.json', 'r'))
+        except FileNotFoundError as e:
+            moves = []
+
         moves.append(move)
         json.dump(moves, open("moves.json", "w"))
 
     def getMoves(self):
 
-        return json.load(open('moves.json', 'r'))
-
+        try:
+            moves = json.load(open('moves.json', 'r'))
+        except FileNotFoundError as e:
+            moves = []
+        return moves
 
     def reminisce(self, window):
 
@@ -79,8 +85,6 @@ class Game(object):
     def step(self, action, window, reminisce=False, delay=0):
 
         delta = self.keyboard.getTransformation(action)
-
-        # I have no idea why this works
         walkable = self.world.walkable(self.player.x + delta[0], self.player.y + delta[1])
 
         if KeyBoard.up(action) and walkable:

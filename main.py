@@ -4,17 +4,20 @@ import time, sys
 from game import Game
 from window import Window
 import logging
-
+import random
+import uuid
 logging.basicConfig(filename="out.log", level=logging.DEBUG, format='[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s')
 
 def main(stdscr):
 
-    game = Game(load=True)
+	# seed = str(uuid.uuid4())
+    game = Game()
+    game.load()
     height, width = stdscr.getmaxyx()
     window = Window(height, width)
     stdscr.refresh()
 
-    # game.reminisce(window)  # Load the players previous moves
+    # game.reminisce(window)  # Show the players previous moves
 
     while True:
 
