@@ -4,13 +4,10 @@ import time, sys
 from game import Game
 from window import Window
 import logging
-import random
-import uuid
 logging.basicConfig(filename="out.log", level=logging.DEBUG, format='[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s')
 
 def main(stdscr):
 
-	# seed = str(uuid.uuid4())
     game = Game()
     game.load()
     height, width = stdscr.getmaxyx()

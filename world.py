@@ -65,23 +65,33 @@ CITIES = {
 
 class World():
 
-    def __init__(self, rep=None, cities=[]):
+    def __init__(self):
 
         self.radius = RADIUS
         self.message = ""
-        self.cities = cities
+        self.seed = None
+        self.rep = None
+        self.cities = None
 
-        if rep != None:
-            self.world_rep = rep
-        else:
-            self.world_rep = self.generate()
 
-    def generate(self):
+    def new(self, seed):
+        self.seed = seed
+        random.seed(a=self.seed)
+        self.cities = self.genCities()
+        self.rep = self.genTerrain()
+
+    def load(self, saved, seed):
+        self.seed = seed
+        random.seed(a=str(self.seed))
+        self.rep = saved['rep']
+        self.cities = saved['cities']  # Store the coords of cities separate from rep so we know where they are without having to check the rep
+
+    def genTerrain(self):
 
         # Create a 2D array with the correct dimensions 
-        world_rep = [[FEATURES['BARRENS'] for x in range(self.radius * 2 + 1)] for y in range(self.radius * 2 + 1)]
+        rep = [[FEATURES['BARRENS'] for x in range(self.radius * 2 + 1)] for y in range(self.radius * 2 + 1)]
         # The Village is always at the exact center
-        world_rep[self.radius][self.radius] = FEATURES['VILLAGE']
+        rep[self.radius][self.radius] = FEATURES['VILLAGE']
 
         # Spiral out from there
         for r in range(1, self.radius + 1):
@@ -100,31 +110,31 @@ class World():
                     x = self.radius - r
                     y = self.radius + (7 * r) - t
 
-                world_rep[x][y] = self.chooseTile(x, y, world_rep)
+                rep[x][y] = self.chooseTile(x, y, rep)
 
 
         for key, landmark in LANDMARKS.items():
             for l in range(0, landmark['num']):
-                self.placeLandmark(landmark['minRadius'], landmark['maxRadius'], key, world_rep)
+                self.placeLandmark(landmark['minRadius'], landmark['maxRadius'], key, rep)
+        return rep
 
+    def genCities(self):
+        cities = []
         # Generate cities at random coordinates
         for city in range(0, CITIES['NUM_CITIES'] + 1):
 
-            city_radius = random.randint(CITIES['RADIUS_MIN'], CITIES['RADIUS_MAX'] + 1)
             # choose a location that won't overwrite the player's house
+            city_radius = random.randint(CITIES['RADIUS_MIN'], CITIES['RADIUS_MAX'] + 1)
             x_choice = random.choice([(0, (self.radius - (city_radius * 2 + 1))), (self.radius + 1, (self.radius * 2) - (city_radius * 2 + 1))])
             y_choice = random.choice([(0, (self.radius - (city_radius * 2 + 1))), (self.radius + 1, (self.radius * 2) - (city_radius * 2 + 1))])
             x = random.randint(*x_choice)
             y = random.randint(*y_choice)
-            # logger.debug('radius: {}'.format(city_radius))
-            # logger.debug('x: {}'.format(x))
-            # logger.debug('y: {}'.format(y))
-            self.generateCity(world_rep, x, y, city_radius)
-            self.cities += [{'x': x, 'y': y, 'radius': city_radius }]
-        return world_rep
+            self.generateCity(x, y, city_radius)  # Change this to return a list of buildings so we can load them again later
+            cities += [{'x': x, 'y': y, 'radius': city_radius }]
 
+        return cities
 
-    def generateCity(self, rep, x_pos, y_pos, radius):
+    def generateCity(self, x_pos, y_pos, radius):
 
         # Simulates erosion
         def decay(tile, x, y, radius, prev_tile):
@@ -157,23 +167,23 @@ class World():
         for x in range(x_pos, x_pos + size):
             for y in range(y_pos, y_pos + size):
 
-                prev_tile = rep[x][y]
+                prev_tile = self.rep[x][y]
 
                 if x % 3 != 0 and y % 3 != 0:  # create buildings in a Manhattan grid
                     tile = FEATURES['BUILDING']
                 else:
-                    tile = rep[x][y]
+                    tile = self.rep[x][y]
                 tile = decay(tile, x - x_pos, y - y_pos, radius, prev_tile)
 
-                rep[x][y] = tile
+                self.rep[x][y] = tile
 
 
 
-    def placeLandmark(self, minRadius, maxRadius, landmark, world_rep):
+    def placeLandmark(self, minRadius, maxRadius, landmark, rep):
 
         x = y = int(self.radius)
 
-        while not self.isTerrain(world_rep[x][y]):
+        while not self.isTerrain(rep[x][y]):
 
             r = floor(random.uniform(0, 1) * (maxRadius - minRadius)) + minRadius
             xDist = floor(random.uniform(0, 1) * r)
@@ -195,19 +205,19 @@ class World():
             y = int(min(self.radius * 2, y))
 
 
-        world_rep[x][y] = landmark
+        rep[x][y] = landmark
 
 
 
     def isTerrain(self, tile):
         return tile == FEATURES['WATER'] or tile == FEATURES['FOREST'] or tile == FEATURES['BARRENS']
 
-    def chooseTile(self, x, y, world_rep):
+    def chooseTile(self, x, y, rep):
         adjacent = [
-            world_rep[x][y-1] if y > 0 else None,
-            world_rep[x][y+1] if y < self.radius * 2 else None,
-            world_rep[x+1][y] if x < self.radius * 2 else None,
-            world_rep[x-1][y] if x > 0 else None
+            rep[x][y-1] if y > 0 else None,
+            rep[x][y+1] if y < self.radius * 2 else None,
+            rep[x+1][y] if x < self.radius * 2 else None,
+            rep[x-1][y] if x > 0 else None
         ]
 
         chances = defaultdict(int)
@@ -276,7 +286,7 @@ class World():
         return True 
 
     def getTile(self, x, y):
-        return self.world_rep[x][y] 
+        return self.rep[x][y] 
 
     def getItem(self, x, y):
 
@@ -285,23 +295,10 @@ class World():
             return 'Wood'
         return None
 
+    # Events set self.message
     def getMessage(self, player):   
 
         return self.message
-        # message = ""
-
-        # # If the player is standing on something interesting
-        # feature = self.getTile(player.x, player.y)
-        # message = MESSAGES.get(feature, "")
-
-        # walkable = self.walkable(player.x, player.y)
-
-        # if self.message == "":
-        #     num = random.randint(0, 100)
-        #     if num <= 5:  # 5% chance
-        #         self.message = 'A wave of existential dread sweeps over you.'
-
-        # return message
 
     def getView(self, radius, player):
 
@@ -334,7 +331,7 @@ class World():
 
         for x in range(x_lo, x_hi+1):
             rep += ('  ' * left_space)
-            rep += ' '.join(map(str, self.world_rep[x][y_lo:y_hi]))
+            rep += ' '.join(map(str, self.rep[x][y_lo:y_hi]))
             rep += ('  ' * right_space)
             rep += '\n'
 
@@ -347,7 +344,7 @@ class World():
 
     def __str__(self):
         string_rep = ''
-        for line in self.world_rep:
+        for line in self.rep:
             for char in line:
                 string_rep += char
             string_rep += '\n'

@@ -4,30 +4,35 @@ from keyboard import KeyBoard
 import json, time, sys
 from collections import defaultdict
 import logging
+import random
+import uuid
 
 logger = logging.getLogger(__name__)
 
 class Game(object):
     """docstring for Game"""
-    def __init__(self, seed=1):
+    def __init__(self):
         super(Game, self).__init__()
         self.keyboard = KeyBoard()        
-        self.world = None
-        self.player = None
+        self.world = World()
+        self.player = Player()
+        self.seed = None
 
     def new(self):
 
+        self.seed = str(uuid.uuid4())
         moves = open('moves.json', 'w')
         moves.write(str(list()))  # Write an empty list to moves.json
-        self.world = World()
-        self.player = Player()
+        self.world.new(self.seed)
+        self.player.new(self.seed, x=self.world.radius, y=self.world.radius)
 
     def load(self):
 
         try:
             state = defaultdict(dict, json.load(open('state.json', 'r')))
-            self.world = World(rep=state['world']['rep'], cities=state['world']['cities'])
-            self.player = Player(state=state['player'])
+            self.seed = state['seed']
+            self.world.load(state['world'], self.seed)
+            self.player.load(state['player'], self.seed)
         except FileNotFoundError as e:  # On the game's first run, the state and moves json wont exist, so just generate a new world and player
             self.new()
 
@@ -35,6 +40,7 @@ class Game(object):
 
     def save(self, move):
         save_state = {
+            'seed': self.seed,
             'player': {
                 'x': self.player.x,
                 'y': self.player.y,
@@ -44,7 +50,7 @@ class Game(object):
                 'inventory': self.player.inventory.inventory,
             },
             'world': {
-                'rep': self.world.world_rep,
+                'rep': self.world.rep,
                 'cities': self.world.cities,
             },
         }
