@@ -1,4 +1,4 @@
-from world import World
+from world import World, Tile
 from player import Player
 from keyboard import KeyBoard
 import json, time, sys
@@ -24,7 +24,7 @@ class Game(object):
         moves = open('moves.json', 'w')
         moves.write(str(list()))  # Write an empty list to moves.json
         self.world.new(self.seed)
-        self.player.new(self.seed, x=self.world.radius, y=self.world.radius)
+        self.player.new(self.seed)
 
     def load(self):
 
@@ -91,7 +91,9 @@ class Game(object):
     def step(self, action, window, reminisce=False, delay=0):
 
         delta = self.keyboard.getTransformation(action)
-        walkable = self.world.walkable(self.player.x + delta[0], self.player.y + delta[1])
+        tile = Tile(self.player.x + delta[0], self.player.y + delta[1], self.seed)
+        self.player.tile = tile
+        walkable = self.world.walkable(tile)
 
         if KeyBoard.up(action) and walkable:
             self.player.moveNorth()
@@ -104,12 +106,6 @@ class Game(object):
 
         elif KeyBoard.right(action) and walkable:
             self.player.moveEast()
-
-        elif KeyBoard.enter(action):
-            tile = self.world.getTile(self.player.x, self.player.y)
-            next_tile = self.world.getTile(self.player.x + delta[0], self.player.y + delta[1])
-            if tile == 'T':
-                self.world.message = 'A tree'
 
         elif not reminisce and KeyBoard.newGame(action):
             window.showLoading()

@@ -1,6 +1,7 @@
 import random
 from inventory import Inventory
 from math import floor
+from world import Tile
 
 class Player(object):
 
@@ -11,12 +12,13 @@ class Player(object):
 
         self.turns_per_day = 7
 
-    def new(self, seed, x=0, y=0):
+    def new(self, seed):
 
         self.seed = seed
         random.seed(a=seed)
-        self.x = x
-        self.y = y
+        self.x = 0
+        self.y = 0
+        self.tile = Tile(self.x, self.y, self.seed)
         self.turns = 0
         self.days = 0
         self.tiredness = 0  # 0.05
@@ -27,6 +29,7 @@ class Player(object):
         self.seed = seed
         self.x = state['x']
         self.y = state['y']
+        self.tile = Tile(self.x, self.y, self.seed)
         self.turns = state['turns']
         self.days = state['days']
         self.tiredness = state['tiredness']
@@ -59,3 +62,6 @@ class Player(object):
 
         self.turns += 1
         self.days = floor(self.turns / self.turns_per_day)
+
+    def getTileMessage(self):
+        return self.tile.message

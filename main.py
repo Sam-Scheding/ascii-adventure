@@ -20,13 +20,12 @@ def main(stdscr):
 
         world = game.world
         player = game.player
-        view = world.getView(window.getMapRadius(), player)
-        player.pickUp(world.getItem(player.x, player.y))
+        view = world.proceduralView(window.getMapRadius(), player.x, player.y)
         player.getOlder()
 
         kwargs = {
             'map_view': view, 
-            'message': world.getMessage(player), 
+            'message': player.getTileMessage(), 
             'player': player, 
         }
 

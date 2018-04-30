@@ -240,7 +240,7 @@ class Stats(object):
 
             self.window.clear()
             self.window.addstr(1, 1, "Day: {}".format(player.days))
-            self.window.addstr(2, 1, "Compass: {}-{}".format(player.x, player.y))
+            self.window.addstr(2, 1, "Compass: {}:{}".format(player.x, player.y))
             self.window.addstr(3, 1, "Weather: Cold")
         except curses.error as e:
             logging.error("Screen was too small: {}".format(e))
